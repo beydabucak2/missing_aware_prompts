@@ -18,7 +18,7 @@ class HateMemesDataset(BaseDataset):
             *args,
             **kwargs,
             names=names,
-            text_column_name="plots",
+            text_column_name="text",
             remove_duplicate=False,
         )
         
