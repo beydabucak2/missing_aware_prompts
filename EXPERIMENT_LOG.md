@@ -7,3 +7,4 @@
 - Geçici çözüm: etiketsiz test.jsonl yüzünden hatememes_test.arrow = hatememes_dev.arrow kopyası. Test skoru gerçek test skoru DEĞİL.
 - Koşu: task_finetune_hatememes, max_epoch=1, per_gpu_batchsize=8, missing both %70, input-level prompt
 - Sonuç: 8 dk 44 sn, loss 2.42 -> 0.75, en iyi val/the_metric 0.544 (33 optimizer adımı, anlamlı sonuç değil)
+## Baseline (10 Epochs, prompt_type="none")
