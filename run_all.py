@@ -12,6 +12,8 @@ VARIANTS = {
     "input": ["prompt_type=input"],
     "attn": ["prompt_type=attention"],
     "input_mask": ["prompt_type=input", "mask_missing_image=True"],
+    "baseline_mask": ["prompt_type=none", "mask_missing_image=True"],
+    "attn_mask": ["prompt_type=attention", "mask_missing_image=True"],
 }
 CONDS = [("both", 0.7), ("text", 0.7), ("image", 0.7)]
 
