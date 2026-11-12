@@ -48,7 +48,8 @@ def config():
     prompt_length = 16
     learnt_p = True
     prompt_layers = [0,1,2,3,4,5]
-    multi_layer_prompt = True    
+    multi_layer_prompt = True
+    mask_missing_image = False    
         
     # Image setting
     train_transform_keys = ["pixelbert"]
