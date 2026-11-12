@@ -2,3 +2,9 @@
 results/*_full.ckpt
 result/
 
+
+logs/
+result/
+dry/
+w0.txt
+w1.txt

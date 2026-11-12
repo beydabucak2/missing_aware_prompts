@@ -14,3 +14,11 @@
 - **Model:** ViLT with Missing-Aware Prompts (Fine-tuned on Hateful Memes)
 - **Settings:** prompt_type="input", batch_size=8, epochs=10, gpus=1
 - **Status:** Completed successfully (~1h 24m).
+| Model | Both 70% | Text 70% | Image 70% |
+|---|---|---|---|
+| baseline | 61.65 | 60.1 | 63.18 |
+| input | 55.93 | 55.95 | 56.35 |
+| attn | 62.58 | 61.08 | 62.96 |
+| input_mask | 49.43 | 51.31 | 49.64 |
+
+Test kaynagi: test_seen | AUROC | 10 epoch | seed 0
