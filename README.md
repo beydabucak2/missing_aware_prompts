@@ -53,3 +53,44 @@ $PY -m pip install -q torch==1.10.0+cu113 torchvision==0.11.0+cu113 -f [https://
 grep -v pytorch-image-models requirements.txt > /kaggle/working/req.txt
 $PY -m pip install -q -r /kaggle/working/req.txt timm==0.4.12
 wget -q -O /kaggle/working/vilt_200k_mlm_itm.ckpt [https://github.com/dandelin/ViLT/releases/download/200k/vilt_200k_mlm_itm.ckpt](https://github.com/dandelin/ViLT/releases/download/200k/vilt_200k_mlm_itm.ckpt)
+```
+
+4. Prepare the data and the missing tables (seed 0). This takes about 15 minutes:
+
+```bash
+python run_all.py prepare
+```
+
+### Quick Demo (Evaluation Only — No Training Required)
+Because pre-trained slim checkpoints (`results/*_slim.pt`) are already included in this repository, `run_all.py` automatically skips the multi-hour training stage if you only want to verify or demo a model's test evaluation.
+
+To run a fast evaluation demo on a specific model (e.g., `attn_mask`) using the saved checkpoint:
+
+```bash
+rm results/attn_mask_scores.json
+python run_all.py work 0 attn_mask
+```
+
+The script will merge the saved slim prompt/classifier weights (`results/attn_mask_slim.pt`) with the frozen ViLT backbone and evaluate `Both`, `Text`, and `Image` test splits in ~2 minutes.
+
+### Full Training and Evaluation
+5. To train and test all models from scratch (if `results/*_slim.pt` are deleted), run these two commands in separate processes, one for each GPU:
+
+```bash
+python run_all.py work 0 baseline,input,attn
+python run_all.py work 1 input_mask,baseline_mask,attn_mask
+python run_all.py summary
+```
+
+`run_all.py` skips a model if its files are already in `results/`.
+To train a model again, delete `results/<name>_slim.pt` and `results/<name>_scores.json` first.
+The script uses `/kaggle/...` paths, so it is written for Kaggle.
+
+## Files
+
+- `run_all.py`: data preparation, training, evaluation, summary
+- `results/`: scores (`*_scores.json`), small checkpoints (`*_slim.pt`), `summary.md`
+- `EXPERIMENT_LOG.md`: summary tables of the runs
+- `DESIGN_NOTES.md`: experimental decisions and failure analysis
+- `REUSED.md`: reused-component inventory and project separation note
+- `logs/`: training and test logs (if present)
