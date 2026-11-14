@@ -4,9 +4,6 @@
   <img src="fig/model.jpeg"/>
 </div>
 
-<div align="center">
-  <img src="fig/model.jpeg"/>
-</div>
 
 # Masking Dummy Images in Missing-Aware Prompting (Hateful Memes)
 
