@@ -1,74 +1,55 @@
-# Multimodal Prompting with Missing Modalities for Visual Recognition (CVPR 2023)
-Official PyTorch implementaton of CVPR 2023 paper "[Multimodal Prompting with Missing Modalities for Visual Recognition](https://arxiv.org/abs/2303.03369)".  
-You can visit our project website [here](https://yilunlee.github.io/missing_aware_prompts/).
 
-## Introduction
-In this paper, we tackle two challenges in multimodal learning for visual recognition: 1) when missing-modality occurs either during training or testing in real-world situations; and 2) when the computation resources are not available to finetune on heavy transformer models. To this end, we propose to utilize prompt learning and mitigate the above two challenges together. Specifically, our modality-missing-aware prompts can be plugged into multimodal transformers to handle general missing-modality cases, while only requiring less than 1% learnable parameters compared to training the entire model. 
 
 <div align="center">
   <img src="fig/model.jpeg"/>
 </div>
 
-## Usage
-### Enviroment
-#### Prerequisites
-Python = 3.7.13
+# Masking Dummy Images in Missing-Aware Prompting (Hateful Memes)
 
-Pytorch = 1.10.0
+This repo is a fork of the official code of Lee et al., *Multimodal Prompting with Missing Modalities for Visual Recognition* (CVPR 2023): https://github.com/YiLunLee/missing_aware_prompts
 
-CUDA = 11.3
+We reproduce three models from the paper and test one fix: masking the dummy image tokens in attention.
 
-#### Other requirements
-```
-pip install -r requirements.txt
-```
+## Results
 
-### Prepare Dataset
-We use three vision and language datasets: [MM-IMDb](https://github.com/johnarevalo/gmu-mmimdb), [UPMC Food-101](https://visiir.isir.upmc.fr/explore), and [Hateful Memes](https://ai.facebook.com/blog/hateful-memes-challenge-and-data-set/). Please download the datasets by yourself. We use `pyarrow` to serialize the datasets, the conversion codes are located in `vilt/utils/wirte_*.py`. Please see `DATA.md` to organize the datasets, otherwise you may need to revise the `write_*.py` files to meet your dataset path and files. Run the following script to create the pyarrow binary file:
-```
-python make_arrow.py --dataset [DATASET] --root [YOUR_DATASET_ROOT]
-```
+Hateful Memes, `test_seen`, AUROC (%), 70% missing rate, 10 epochs, seed 0.
+One model per row is trained on the missing-both case and tested on three cases.
 
-### Evaluation
-```
-python run.py with data_root=<ARROW_ROOT> \
-        num_gpus=<NUM_GPUS> \
-        num_nodes=<NUM_NODES> \
-        per_gpu_batchsize=<BS_FITS_YOUR_GPU> \
-        <task_finetune_mmimdb or task_finetune_food101 or task_finetune_hatememes> \
-        load_path=<MODEL_PATH> \
-        exp_name=<EXP_NAME> \
-        prompt_type=<PROMPT_TYPE> \
-        test_ratio=<TEST_RATIO> \
-        test_type=<TEST_TYPE> \
-        test_only=True     
-```
+| Model | Flags | Both | Text | Image | Mean |
+|---|---|---|---|---|---|
+| baseline | `prompt_type=none` | 61.65 | 60.10 | 63.18 | 61.64 |
+| input | `prompt_type=input` | 55.93 | 55.95 | 56.35 | 56.08 |
+| attn | `prompt_type=attention` | 62.58 | 61.08 | 62.96 | 62.21 |
+| input+mask | `prompt_type=input mask_missing_image=True` | 49.43 | 51.31 | 49.64 | 50.13 |
+| baseline+mask | `prompt_type=none mask_missing_image=True` | 63.31 | 60.21 | 64.72 | 62.75 |
+| attn+mask | `prompt_type=attention mask_missing_image=True` | 63.10 | 61.98 | 63.77 | 62.95 |
 
-### Train
-1. Download the pre-trained ViLT model weights from [here](https://github.com/dandelin/ViLT.git).
+Only one seed was used, so differences of about one point can be noise.
+Scores are in `results/*_scores.json`. Summary tables are in `EXPERIMENT_LOG.md`.
 
-2. Start to train.
-```
-python run.py with data_root=<ARROW_ROOT> \
-        num_gpus=<NUM_GPUS> \
-        num_nodes=<NUM_NODES> \
-        per_gpu_batchsize=<BS_FITS_YOUR_GPU> \
-        <task_finetune_mmimdb or task_finetune_food101 or task_finetune_hatememes> \
-        load_path=<PRETRAINED_MODEL_PATH> \
-        exp_name=<EXP_NAME>
-```
+## What we changed
 
+- `mask_missing_image=True` (`vilt/config.py`, `vilt/modules/vilt_missing_aware_prompt_module.py`): for samples with a missing image, the attention mask of all image tokens except the first is set to 0.
+- `prompt_type=none`: no prompts. Only the pooler and the classifier are trained.
+- `vilt/utils/write_hatememes.py`: removed a line that uses an undefined variable (`text_aug_dir`).
+- `vilt/datasets/hatememes_dataset.py`: text column name changed from `plots` to `text`.
+- `run_all.py`: prepares the data, trains the models, saves small checkpoints and evaluates in the three test cases.
 
-## Citation
-If you find this work useful for your research, please cite:
-```Bibtex
-@inproceedings{lee2023cvpr,
- title = {Multimodal Prompting with Missing Modalities for Visual Recognition},
- author = {Yi-Lun Lee and Yi-Hsuan Tsai and Wei-Chen Chiu and Chen-Yu Lee},
- booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
- year = {2023}
-}
-```
+## How to run (Kaggle)
 
-## Acknowledgements
-This code is based on [ViLT](https://github.com/dandelin/ViLT.git).
+1. Open a Kaggle notebook. Choose **GPU T4 x2** and turn **Internet on**.
+2. Add two datasets as input:
+   - `parthplc/facebook-hateful-meme-dataset` (images, `train.jsonl`, `dev.jsonl`)
+   - a dataset with a **labelled** `test_seen.jsonl` (the script looks for it in `/kaggle/input`). If it finds none, it uses `dev.jsonl` as the test set and writes `dev` in `results/test_source.txt`.
+3. Set up the environment and download the ViLT weights:
+
+```bash
+git clone [https://github.com/beydabucak2/missing_aware_prompts.git](https://github.com/beydabucak2/missing_aware_prompts.git)
+cd missing_aware_prompts
+wget -qO- [https://micro.mamba.pm/api/micromamba/linux-64/latest](https://micro.mamba.pm/api/micromamba/linux-64/latest) | tar -xj bin/micromamba
+./bin/micromamba create -y -q -n mp -r /kaggle/working/mamba -c conda-forge python=3.7
+PY=/kaggle/working/mamba/envs/mp/bin/python
+$PY -m pip install -q torch==1.10.0+cu113 torchvision==0.11.0+cu113 -f [https://download.pytorch.org/whl/cu113/torch_stable.html](https://download.pytorch.org/whl/cu113/torch_stable.html)
+grep -v pytorch-image-models requirements.txt > /kaggle/working/req.txt
+$PY -m pip install -q -r /kaggle/working/req.txt timm==0.4.12
+wget -q -O /kaggle/working/vilt_200k_mlm_itm.ckpt [https://github.com/dandelin/ViLT/releases/download/200k/vilt_200k_mlm_itm.ckpt](https://github.com/dandelin/ViLT/releases/download/200k/vilt_200k_mlm_itm.ckpt)
