@@ -4,6 +4,10 @@
   <img src="fig/model.jpeg"/>
 </div>
 
+<div align="center">
+  <img src="fig/model.jpeg"/>
+</div>
+
 # Masking Dummy Images in Missing-Aware Prompting (Hateful Memes)
 
 This repo is a fork of the official code of Lee et al., *Multimodal Prompting with Missing Modalities for Visual Recognition* (CVPR 2023): https://github.com/YiLunLee/missing_aware_prompts
